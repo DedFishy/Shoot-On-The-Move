@@ -221,16 +221,59 @@ public class ShootOnTheMove : MonoBehaviour
         //Vector2 offset = Vector2.zero;
         float offsetDistance = pureTargetDifference.magnitude;
 
+        float angleCompensationFactor = 0.5f * (tangentialVelocity == 0 ? 0 : Math.Sign(pureTargetDifference.y));
+
+        
+
+        Vector2 distanceVector = new Vector2();
+
+        Vector2 V_required_xy = new Vector2();
+
+        float turretAngleDeg = 0;
+
+
         for (int i = 0; i < numberOfAlgorithmIterations; i++)
         {
 
-            offsetDistance = pureTargetDifference.magnitude / Mathf.Cos(Mathf.Atan2(tangentialVelocity * timeOfFlight, offsetDistance));
+            //offsetDistance = pureTargetDifference.magnitude / Mathf.Cos(turretAngleDeg * Mathf.Deg2Rad - angleBetweenGoalAndRobot);
 
-            timeOfFlight = (float)lerpTable.getTimeOfFlight(offsetDistance - radialVelocity * timeOfFlight);
+            //timeOfFlight = (float)lerpTable.getTimeOfFlight(offsetDistance - radialVelocity * timeOfFlight);
 
             //offset = new Vector2(linearVelocity.x * Mathf.Sin(angleBetweenGoalAndRobot), linearVelocity.y * Mathf.Cos(angleBetweenGoalAndRobot)) * timeOfFlight;
 
+                    // Inputs (FIELD FRAME)
+            Vector2 goalPos_xy = targetPosition;          // (x, y)
+            Vector2 shooterExitPos_xy = turretPosition;   // (x, y)
+            Vector2 robotVel_xy = linearVelocity;         // (vx, vy) field-relative
+            float robotYaw = robotRotation;              // radians, field-relative
+            float t = timeOfFlight;                     // ball flight time (seconds)
 
+            // 1) Displacement to goal (field frame)
+            Vector2 D_xy = goalPos_xy - shooterExitPos_xy;
+
+            // 2) Required FIELD-relative ball horizontal velocity
+            V_required_xy = D_xy / t;
+
+            // 3) Shooter-relative horizontal velocity
+            Vector2 V_shooter_xy = V_required_xy - robotVel_xy;
+
+            // 4) Rotate into ROBOT frame (turret frame if turret is robot-relative)
+            float cosYaw = Mathf.Cos(-robotYaw);
+            float sinYaw = Mathf.Sin(-robotYaw);
+
+            Vector2 V_turret = new Vector2(
+                V_shooter_xy.x * cosYaw - V_shooter_xy.y * sinYaw,
+                V_shooter_xy.x * sinYaw + V_shooter_xy.y * cosYaw
+            );
+
+            // 5) Turret angle command
+            turretAngleDeg = Mathf.Atan2(V_turret.y, -V_turret.x) * Mathf.Rad2Deg;
+
+            print(turretAngleDeg);
+
+            distanceVector = V_shooter_xy * timeOfFlight;
+
+            timeOfFlight = (float)lerpTable.getTimeOfFlight(distanceVector.magnitude);
 
         }
 
@@ -256,7 +299,7 @@ public class ShootOnTheMove : MonoBehaviour
 
         float offsetTurretAngle = Mathf.Atan2(targetDifference.y, -targetDifference.x) * Mathf.Rad2Deg;
 
-        float distance = offsetDistance;//targetDifference.magnitude;
+        float distance = distanceVector.magnitude;//offsetDistance;//targetDifference.magnitude;
         
 
 
@@ -272,9 +315,66 @@ public class ShootOnTheMove : MonoBehaviour
         //print(offsetTurretAngle - notOffsetTurretAngle);
 
         hoodController.setAngles( (float)lerpTable.getAngle(distance),
-            Mathf.Atan2(tangentialVelocity * timeOfFlight, distance) * Mathf.Rad2Deg + notOffsetTurretAngle);
+            turretAngleDeg);
+            //(Mathf.Atan2(tangentialVelocity * timeOfFlight, distance) - angleCompensationFactor) * Mathf.Rad2Deg + notOffsetTurretAngle);
 
         //turretController.lookTowards(offsetPoseCube);
+    }
+
+    void BoyneSpecial()
+    {
+        
+        Vector2 actualTargetPosition = convertToVector2(target.transform.position);
+        Vector2 actualTurretPosition = convertToVector2(turretController.getTranslation());
+
+        Vector2 linearVelocity = getLinearVelocity();
+        float angularVelocity = getAngularVelocity();
+        Vector2 actualVectorBetweenTurretAndGoal = actualTargetPosition - actualTurretPosition;
+        float angleBetweenGoalAndRobot = -Mathf.Atan2(actualVectorBetweenTurretAndGoal.y, actualVectorBetweenTurretAndGoal.x);
+
+        float actualDistanceBetweetTurretAndGoal = actualVectorBetweenTurretAndGoal.magnitude;
+
+        float radialVelocity = linearVelocity.x * Mathf.Cos(angleBetweenGoalAndRobot) - linearVelocity.y * Mathf.Sin(angleBetweenGoalAndRobot);
+        float tangentialVelocity = linearVelocity.x * Mathf.Sin(angleBetweenGoalAndRobot) + linearVelocity.y * Mathf.Cos(angleBetweenGoalAndRobot);
+
+        float baseTurretAngle = Mathf.Rad2Deg * Mathf.Atan2(actualVectorBetweenTurretAndGoal.y, -actualVectorBetweenTurretAndGoal.x);
+
+        float timeOfFlight = (float)lerpTable.getTimeOfFlight(actualDistanceBetweetTurretAndGoal);
+
+        float tangentialVelocityDistanceOffset = 0;
+        float radialVelocityDistanceOffset = 0;
+
+        float offsetDistanceBetweenTurretAndGoal = actualDistanceBetweetTurretAndGoal;
+
+        for (int i = 0; i < numberOfAlgorithmIterations; i++)
+        {
+            offsetDistanceBetweenTurretAndGoal = actualDistanceBetweetTurretAndGoal + tangentialVelocityDistanceOffset + radialVelocityDistanceOffset;
+
+            // Tangential velocity calculations
+            tangentialVelocityDistanceOffset = 
+                actualDistanceBetweetTurretAndGoal - 
+                (actualDistanceBetweetTurretAndGoal / Mathf.Cos(Mathf.Atan2(tangentialVelocity * timeOfFlight, actualDistanceBetweetTurretAndGoal))); // Updated distance value
+            
+            // Radial velocity calculations
+            radialVelocityDistanceOffset = -radialVelocity * timeOfFlight;
+
+            timeOfFlight = (float)lerpTable.getTimeOfFlight(offsetDistanceBetweenTurretAndGoal);
+
+        }
+
+        lerpTable.putNewTimeOfFlight(timeOfFlight);
+
+        shooterController.setVelocity((float)lerpTable.getVelocity(offsetDistanceBetweenTurretAndGoal));
+
+        hoodController.setAngles( (float)lerpTable.getAngle(offsetDistanceBetweenTurretAndGoal),
+            Mathf.Atan2(tangentialVelocity * timeOfFlight, actualDistanceBetweetTurretAndGoal) * Mathf.Rad2Deg + baseTurretAngle); // TODO: make this a saved variable
+
+
+    }
+    
+    void ElijahSpecial2()
+    {
+        
     }
 
     public UnityEngine.Vector3 convertVec2To3(Vector2 vec)

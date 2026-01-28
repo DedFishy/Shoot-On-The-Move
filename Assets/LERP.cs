@@ -36,8 +36,8 @@ public class LERP : MonoBehaviour
 
     public double getAngle(double value) {
         
-        int[] indices = findClosestIndices(value);
-        return findLerpValue(indices[0], indices[1], value, 1) + offsetLERP.getAngleOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
+        int[] indices = findClosestIndices(value, 0);
+        return findLerpValue(indices[0], indices[1], value, 1, 0);// + offsetLERP.getAngleOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
     }
     public double getAngle()
     {
@@ -45,8 +45,9 @@ public class LERP : MonoBehaviour
     }
     public double getVelocity(double value) {
         
-        int[] indices = findClosestIndices(value);
-        return findLerpValue(indices[0], indices[1], value, 2) + offsetLERP.getVelocityOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
+        int[] indices = findClosestIndices(value, 0);
+        print(indices[0] + " " + indices[1]);
+        return findLerpValue(indices[0], indices[1], value, 2, 0);// + offsetLERP.getVelocityOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
     }
     public double getVelocity()
     {
@@ -90,23 +91,23 @@ public class LERP : MonoBehaviour
 
     /* Returns {Smaller, Larger} */
     // Algorithm is binary search from GeeksForGeeks
-    private int[] findClosestIndices(double x){
+    private int[] findClosestIndices(double x, int keyIndice=0){
         int subArrayStart = 0;
         int subArrayEnd = lerp.Length - 1;
-        if (x < lerp[0][0]) return new int[] {0,0};
-        if (x > lerp[lerp.Length-1][0]) return new int[] {lerp.Length-1, lerp.Length-1};
+        if (x < lerp[0][keyIndice]) return new int[] {0,0};
+        if (x > lerp[lerp.Length-1][keyIndice]) return new int[] {lerp.Length-1, lerp.Length-1};
         
         while (subArrayStart <= subArrayEnd){
             
             int targetIndex = (subArrayStart + subArrayEnd) / 2;
 
             // Exact match!
-            if (lerp[targetIndex][0] == x) {
+            if (lerp[targetIndex][keyIndice] == x) {
                 return new int[] {targetIndex, targetIndex};
 
             }
             // Target lies in smaller portion
-            else if (lerp[targetIndex][0] > x) {
+            else if (lerp[targetIndex][keyIndice] > x) {
                 subArrayEnd = targetIndex - 1;
             }
             // Target lies in larger portion
@@ -119,11 +120,11 @@ public class LERP : MonoBehaviour
         return new int[] {subArrayEnd, subArrayStart};
     }
 
-    private double findLerpValue(int lowerIndex, int higherIndex, double value, int targetIndice) {
+    private double findLerpValue(int lowerIndex, int higherIndex, double value, int targetIndice, int keyIndice=0) {
         if (lowerIndex == higherIndex) return lerp[lowerIndex][targetIndice];
-        double x1 = lerp[lowerIndex][0];
+        double x1 = lerp[lowerIndex][keyIndice];
         double y1 = lerp[lowerIndex][targetIndice];
-        double x2 = lerp[higherIndex][0];
+        double x2 = lerp[higherIndex][keyIndice];
         double y2 = lerp[higherIndex][targetIndice];
         return (y2-y1) / (x2-x1) * (value-x1) + y1; // Two-point form of a line
     }

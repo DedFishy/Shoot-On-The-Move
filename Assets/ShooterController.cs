@@ -51,7 +51,7 @@ public class ShooterController : MonoBehaviour
     {
         if (activelyShooting) {
             framesSinceLastShoot++;
-            if (framesSinceLastShoot >= 10) {
+            if (framesSinceLastShoot >= 40) {
                 shootNoInput();
                 framesSinceLastShoot = 0;
             }

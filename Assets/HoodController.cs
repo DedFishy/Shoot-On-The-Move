@@ -11,12 +11,14 @@ public class HoodController : MonoBehaviour
 
     public LERP lerp;
 
-    public float currentFrameWeight;
+    public float currentFrameWeightTurret;
+    public float currentFrameWeightHood;
 
     private float hood = 45;
     private float turret = 45;
 
     private float weightedTurretAngle = 0;
+    private float weightedHoodAngle = 0;
 
     public bool lockTo180;
 
@@ -32,14 +34,15 @@ public class HoodController : MonoBehaviour
 
     public void setRotation(float targetRotation, float turretRotation)
     {
+        weightedTurretAngle = currentFrameWeightTurret * weightedTurretAngle + turretRotation * (1-currentFrameWeightTurret);
 
-        weightedTurretAngle = currentFrameWeight * weightedTurretAngle + turretRotation * (1-currentFrameWeight);
-
-        transform.rotation = Quaternion.Euler(new Vector3(
+        Quaternion newRot = Quaternion.Euler(new Vector3(
             transform.rotation.eulerAngles.x,
             lockTo180 ? 180 : weightedTurretAngle,
             targetRotation
         ));
+
+        transform.rotation = Quaternion.SlerpUnclamped(transform.rotation, newRot, 1);
 
 
     }
@@ -65,7 +68,8 @@ public class HoodController : MonoBehaviour
             setRotation(90-angleSlider.value, turret);
         } else
         {
-            setRotation((float)(90 -hood - (useOffsetSlider ? offsetSlider.value * lerp.getOffsetMultiplier() : 0)), turret);
+            weightedHoodAngle = currentFrameWeightHood * weightedHoodAngle + hood * (1-currentFrameWeightHood);
+            setRotation((float)(90 -weightedHoodAngle - (useOffsetSlider ? offsetSlider.value * lerp.getOffsetMultiplier() : 0)), turret);
         }
     }
 }

@@ -269,7 +269,6 @@ public class ShootOnTheMove : MonoBehaviour
             // 5) Turret angle command
             turretAngleDeg = Mathf.Atan2(V_turret.y, -V_turret.x) * Mathf.Rad2Deg;
 
-            print(turretAngleDeg);
 
             distanceVector = V_shooter_xy * timeOfFlight;
 

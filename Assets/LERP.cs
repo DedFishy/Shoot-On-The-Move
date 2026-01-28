@@ -17,19 +17,20 @@ public class LERP : MonoBehaviour
     // Distance value, angle value, velocity value
     private double[][] lerp = new double[][]
     {
-        new double[]{0.943, 83, 6.521739, 1.123051},
-        new double[]{2.001, 75, 6.917391, 1.180779},
-        new double[]{3.127, 71, 7.482608, 1.268265},
-        new double[]{4.113, 62, 7.652174, 1.204544},
-        new double[]{5.17, 58, 8.16087, 1.241837},
-        new double[]{6.297, 57, 8.895652, 1.426422},
-        new double[]{7.425, 53, 9.291305, 1.349884},
-        new double[]{8.481, 50, 9.8, 1.373215},
-        new double[]{9.818, 47, 10.42174, 1.405548},
-        new double[]{11.297, 45, 11.15652, 1.46701},
-        new double[]{14.042, 45, 12.28696, 1.642212},
-        new double[]{15.591, 45, 12.85217, 1.723083},
-        new double[]{19.111, 45, 14.15217, 1.928711}
+        new double[]{1.269, 70, 5.678262, 0.8122253},
+        new double[]{1.693, 67, 5.921741, 0.8318253},
+        new double[]{2.006, 65, 6.165218, 0.8799438},
+        new double[]{2.561, 62, 6.408697, 0.8852081},
+        new double[]{3.064, 60, 6.773914, 0.9520416},
+        new double[]{3.767, 58, 7.26087, 1.033432},
+        new double[]{4.128, 56, 7.504349, 1.041428},
+        new double[]{4.578, 54, 7.747827, 1.044159},
+        new double[]{5.602, 53, 8.356523, 1.154999},
+        new double[]{6.298, 51, 8.72174, 1.194916},
+        new double[]{7.167, 49, 9.208696, 1.223297},
+        new double[]{7.435, 47, 9.452175, 1.20813}
+
+
 
     };
 
@@ -46,7 +47,6 @@ public class LERP : MonoBehaviour
     public double getVelocity(double value) {
         
         int[] indices = findClosestIndices(value, 0);
-        print(indices[0] + " " + indices[1]);
         return findLerpValue(indices[0], indices[1], value, 2, 0);// + offsetLERP.getVelocityOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
     }
     public double getVelocity()

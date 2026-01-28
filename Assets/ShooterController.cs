@@ -30,6 +30,11 @@ public class ShooterController : MonoBehaviour
 
     private float framesSinceLastShoot;
 
+    public float phaseTime;
+
+    private float timestampOfNextShot = 0;
+    private bool doNextShot = false;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -45,6 +50,11 @@ public class ShooterController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Time.time >= timestampOfNextShot && doNextShot)
+        {
+            doNextShot = false;
+            shootNoDelay();
+        }
     }
 
     void FixedUpdate()
@@ -69,6 +79,11 @@ public class ShooterController : MonoBehaviour
 
     }
     public void shootNoInput()
+    {
+        timestampOfNextShot = Time.time + phaseTime;
+        doNextShot = true;
+    }
+    public void shootNoDelay()
     {
         if (shootOnTheMove.getDistanceToTarget() > 7.5) return;
 

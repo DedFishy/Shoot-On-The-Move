@@ -27,10 +27,10 @@ public class FuelSelfDestruct : MonoBehaviour
 
     void FixedUpdate()
     {
-        float drag = dragCoeffAndEverythingElseExceptForVelociyOfTheBallSquared * (rb.linearVelocity.magnitude*rb.linearVelocity.magnitude);
+        //float drag = dragCoeffAndEverythingElseExceptForVelociyOfTheBallSquared * (rb.linearVelocity.magnitude*rb.linearVelocity.magnitude);
         
-        Vector3 dragVector = -rb.linearVelocity.normalized * drag;
+        //Vector3 dragVector = -rb.linearVelocity.normalized * drag;
 
-        rb.linearVelocity += dragVector/50f;
+        //rb.linearVelocity += dragVector/50f;
     }
 }

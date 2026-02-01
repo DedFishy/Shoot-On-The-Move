@@ -21,10 +21,18 @@ public class Ballometer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        print("Ball collided");
+        GameObject obj = other.gameObject;
+        print("Average Velocity: " + ((getAsVec2(obj.GetComponent<Rigidbody>().linearVelocity) + obj.GetComponent<FuelSelfDestruct>().initialVelocity) / 2));
         Destroy(other.gameObject);
         float timeDelta = Time.time - shooterController.shotStartTime;
         outputProcessor.acceptDelta(timeDelta);
         counter.countShotMade();
+
+
+    }
+
+    Vector2 getAsVec2(Vector3 vec)
+    {
+        return new Vector2(vec.x, vec.z);
     }
 }

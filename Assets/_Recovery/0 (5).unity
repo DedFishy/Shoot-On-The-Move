@@ -759,7 +759,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2285bed503a7546aa2774b55331ef83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  initialVelocity: {x: 0, y: 0}
 --- !u!1 &281336314
 GameObject:
   m_ObjectHideFlags: 0
@@ -4328,7 +4327,6 @@ GameObject:
   - component: {fileID: 1493696447}
   - component: {fileID: 1493696446}
   - component: {fileID: 1493696448}
-  - component: {fileID: 1493696449}
   m_Layer: 0
   m_Name: Ballometer
   m_TagString: Untagged
@@ -4353,7 +4351,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.25
   m_Height: 0.25
@@ -4389,27 +4387,6 @@ MonoBehaviour:
   shooterController: {fileID: 82428378}
   outputProcessor: {fileID: 1903198267}
   counter: {fileID: 396470257}
---- !u!65 &1493696449
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1493696445}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.23, y: 0.755, z: 1.08}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1501981565
 GameObject:
   m_ObjectHideFlags: 0
@@ -4854,8 +4831,6 @@ MonoBehaviour:
   radialVelocity: 0
   offsetPoseCube: {fileID: 755377376}
   tangentialVelocityDragOffset: 0
-  timeToGetToNewPositionTurretHood: 0
-  vRequired: {x: 0, y: 0}
 --- !u!1 &1717940510 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1292270827935820300, guid: 05187015480ff36c9a062ee3a348e391, type: 3}

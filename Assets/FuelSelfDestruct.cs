@@ -3,9 +3,11 @@ using UnityEngine;
 public class FuelSelfDestruct : MonoBehaviour
 {
 
-    float dragCoeffAndEverythingElseExceptForVelociyOfTheBallSquared = 0.00508198920953f;
+    float dragCoeffAndEverythingElseExceptForVelociyOfTheBallSquared = 0.0000508198920953f;
 
     Rigidbody rb;
+    
+    public Vector2 initialVelocity = new Vector2(0,0);
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -16,6 +18,10 @@ public class FuelSelfDestruct : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (initialVelocity.magnitude < Mathf.Epsilon && rb.linearVelocity.magnitude > 0.1) {
+            initialVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
+        }
         if (transform.position.y < -50) Destroy(gameObject);
 
         
@@ -31,6 +37,6 @@ public class FuelSelfDestruct : MonoBehaviour
         
         Vector3 dragVector = -rb.linearVelocity.normalized * drag;
 
-        rb.linearVelocity += dragVector/50f;
+        rb.linearVelocity += dragVector/50f/0.01f; // 0.01=mass, 50=(1/time)
     }
 }

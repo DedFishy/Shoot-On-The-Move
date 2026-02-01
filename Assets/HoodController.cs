@@ -42,7 +42,7 @@ public class HoodController : MonoBehaviour
             targetRotation
         ));
 
-        transform.rotation = Quaternion.SlerpUnclamped(transform.rotation, newRot, 1);
+        transform.rotation = newRot;//Quaternion.SlerpUnclamped(transform.rotation, newRot, 1);
 
 
     }

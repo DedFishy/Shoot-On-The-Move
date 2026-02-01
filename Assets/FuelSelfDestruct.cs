@@ -9,6 +9,9 @@ public class FuelSelfDestruct : MonoBehaviour
     
     public Vector2 initialVelocity = new Vector2(0,0);
 
+    private Vector2 averageVelocityCumulative;
+    private int averageVelocityFrameCount;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,11 +27,17 @@ public class FuelSelfDestruct : MonoBehaviour
         }
         if (transform.position.y < -50) Destroy(gameObject);
 
-        
+        averageVelocityCumulative += new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
+        averageVelocityFrameCount += 1;
         
         //print("totalr horizontal velocity (real): " + GetComponent<Rigidbody>().linearVelocity.x);
         //print("totalr vertical velocity (real): " + GetComponent<Rigidbody>().linearVelocity.y);
         //print("totalr sideways velocity (real): " + GetComponent<Rigidbody>().linearVelocity.z);
+    }
+
+    public void PrintAverage()
+    {
+        print(averageVelocityCumulative / averageVelocityFrameCount);
     }
 
     void FixedUpdate()

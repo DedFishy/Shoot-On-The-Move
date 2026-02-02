@@ -226,7 +226,7 @@ MonoBehaviour:
   useOffsetSlider: 0
   offsetSlider: {fileID: 816043663}
   shootOnTheMove: {fileID: 1709230121}
-  phaseTime: 0.3
+  phaseTime: 0
 --- !u!114 &82428379
 MonoBehaviour:
   m_ObjectHideFlags: 0

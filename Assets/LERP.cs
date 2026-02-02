@@ -43,9 +43,6 @@ public class LERP : MonoBehaviour
         new double[]{14.042, 45, 12.28696, 1.642212},
         new double[]{15.591, 45, 12.85217, 1.723083},
         new double[]{19.111, 45, 14.15217, 1.928711}
-
-
-
     };
 
 

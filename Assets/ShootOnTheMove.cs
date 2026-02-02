@@ -179,12 +179,134 @@ public class ShootOnTheMove : MonoBehaviour
         hoodController.setAngles(hoodAngle, turretAngle);
     }
 
+    public float tangentialVelocityDragOffset;
+
+    public float timeToGetToNewPositionTurretHood;
+
+    /*
+    Find a velocity such that:
+    - The average velocity of the ball with drag is equal to requiredVelocity
+    To do this:
+    - Make an initial guess, which is requiredVelocity (it will be wrong)
+    - Find end velocity based on drag & shot time
+    - Use this value to calculate a new inital guess
+    - Repeat this until the average velocity with initial guess is equal to required velocity
+    */
+
+    Vector2 GetInitialVelocityAfterDrag(Vector2 requiredVelocity, Vector2 initialVelocity, float dragCoeff, float timeOfFlight, float timeInterval, int numIterations2)
+    {
+        Vector2 velocityWithDrag = initialVelocity;
+
+
+
+        Vector2 averageVelocity = Vector2.zero;
+        int numIterations = 0;
+        for (float i = 0; i < timeOfFlight; i += timeInterval)
+        {
+            velocityWithDrag -= timeInterval * (dragCoeff * (velocityWithDrag.magnitude*velocityWithDrag) / 0.01f); // 0.01=mass of ball
+            averageVelocity += velocityWithDrag;
+            numIterations++;
+        }
+        averageVelocity /= numIterations;
+        Vector2 delta = (requiredVelocity - averageVelocity);
+        //initialVelocity = (requiredVelocity * 2) - velocityWithDrag;
+
+        if ((averageVelocity - requiredVelocity).magnitude < 0.1) {
+            /*print(numIterations2);
+            print(averageVelocity);
+            print(requiredVelocity);*/
+
+            return initialVelocity;
+        }
+
+        else return GetInitialVelocityAfterDrag(requiredVelocity, initialVelocity + delta, dragCoeff, timeOfFlight, timeInterval, numIterations2+1);
+
+        
+        /*Vector2 currentAverageVelocity = (velocityWithDrag + intialVelocity) / 2;
+        Vector2 delta = requiredVelocity - currentAverageVelocity;
+
+        while(delta.magnitude > 0.1) // arbitrary tolerance
+        {
+            intialVelocity += delta;
+            Vector2 intialVelocityCopy = intialVelocity;
+            for (float i = 0; i < timeOfFlight; i += timeInterval)
+            {
+                intialVelocityCopy -= dragCoeff * (intialVelocityCopy.magnitude*intialVelocityCopy) / 0.01f; // 0.01=mass of ball
+            }
+            currentAverageVelocity = (intialVelocityCopy + intialVelocity) / 2;
+            delta = requiredVelocity - currentAverageVelocity;
+        }*/
+
+    }
+
+    Vector2 GetInitialVelocityAfterDrag(Vector2 requiredVelocity, float dragCoeff, float timeOfFlight, float timeInterval)
+    {
+        return GetInitialVelocityAfterDrag(requiredVelocity, requiredVelocity, dragCoeff, timeOfFlight, timeInterval, 0);
+    }
+
+    private Vector2[] velocityMeasurementFrames = new Vector2[6];
+    private Vector2[] accelerationMeasurementFrames = new Vector2[6];
+    private Vector2[] jerkMeasurementFrames = new Vector2[6];
+
+    public Vector2 vRequired;
+
     void ElijahSpecial()
     {
         var targetPosition = getTargetPosition();
         var turretPosition = convertToVector2(turretController.getTranslation());
         Vector2 robotPose = getTranslation();
-        UnityEngine.Vector2 linearVelocity = getLinearVelocity();
+
+        /*for (int i = 1; i < velocityMeasurementFrames.Length; i++)
+        {
+            velocityMeasurementFrames[i-1] = velocityMeasurementFrames[i];
+        }
+        velocityMeasurementFrames[velocityMeasurementFrames.Length - 1] = robotPose;
+
+        Vector2 linearVelocity = Vector2.zero;
+        if (velocityMeasurementFrames[0] != null)
+        {
+            linearVelocity = ((velocityMeasurementFrames[3] * 0.1f + velocityMeasurementFrames[4] * 0.3f + velocityMeasurementFrames[5] * 0.6f) - (velocityMeasurementFrames[0] * 0.6f + velocityMeasurementFrames[1] * 0.30f + velocityMeasurementFrames[2] * 0.1f)) / ((6f) * 0.02f);
+        }
+
+        
+
+        for (int i = 1; i < accelerationMeasurementFrames.Length; i++)
+        {
+            accelerationMeasurementFrames[i-1] = accelerationMeasurementFrames[i];
+        }
+        accelerationMeasurementFrames[accelerationMeasurementFrames.Length - 1] = linearVelocity;
+
+        Vector2 acceleration = Vector2.zero;
+        if (accelerationMeasurementFrames[0] != null)
+        {
+            acceleration = (accelerationMeasurementFrames[accelerationMeasurementFrames.Length - 1] - accelerationMeasurementFrames[0]) / (accelerationMeasurementFrames.Length * 0.02f);
+        }
+
+        for (int i = 1; i < jerkMeasurementFrames.Length; i++)
+        {
+            jerkMeasurementFrames[i-1] = jerkMeasurementFrames[i];
+        }
+        jerkMeasurementFrames[jerkMeasurementFrames.Length - 1] = acceleration;
+
+        Vector2 jerk = Vector2.zero;
+        if (jerkMeasurementFrames[0] != null)
+        {
+            jerk = (jerkMeasurementFrames[jerkMeasurementFrames.Length - 1] - jerkMeasurementFrames[0]) / (jerkMeasurementFrames.Length * 0.02f);
+        }
+
+        acceleration += jerk * timeToGetToNewPositionTurretHood;
+
+        linearVelocity += acceleration * timeToGetToNewPositionTurretHood;
+
+        print("Velocity:        " + linearVelocity + " (" + linearVelocity.magnitude + ")");
+        print("Actual Velocity: " + getLinearVelocity() + " (" + getLinearVelocity().magnitude + ")");
+        print("Jerk: " + jerk + " (" + jerk.magnitude + ")");
+        print("Acceleration: " + acceleration + " (" + acceleration.magnitude + ")");
+
+        robotPose += linearVelocity * timeToGetToNewPositionTurretHood;*/
+        Vector2 linearVelocity = getLinearVelocity();
+
+
         float angularRobotVelocity = getAngularVelocity();
         var targetDifference = targetPosition - turretPosition;
 
@@ -196,7 +318,13 @@ public class ShootOnTheMove : MonoBehaviour
         radialVelocity = linearVelocity.x * Mathf.Cos(angleBetweenGoalAndRobot) - linearVelocity.y * Mathf.Sin(angleBetweenGoalAndRobot);
         //print("Radial velocity: " + radialVelocity);
         float tangentialVelocity = linearVelocity.x * Mathf.Sin(angleBetweenGoalAndRobot) + linearVelocity.y * Mathf.Cos(angleBetweenGoalAndRobot);
+
+        //float projectionScalar = (linearVelocity.x * targetDifference.x + linearVelocity.y * targetDifference.y) / (targetDifference.x * targetDifference.x + targetDifference.y + targetDifference.y);
+
+        //float tangentialVelocity = (projectionScalar * targetDifference).magnitude;
         //print("Tangential velocity: " + tangentialVelocity);
+
+        
 
 
         float robotRotation = getRotation() * Mathf.Deg2Rad;
@@ -222,6 +350,8 @@ public class ShootOnTheMove : MonoBehaviour
         float offsetDistance = pureTargetDifference.magnitude;
 
         float angleCompensationFactor = 0.5f * (tangentialVelocity == 0 ? 0 : Math.Sign(pureTargetDifference.y));
+
+        
 
         
 
@@ -257,13 +387,22 @@ public class ShootOnTheMove : MonoBehaviour
             // 3) Shooter-relative horizontal velocity
             Vector2 V_shooter_xy = V_required_xy - robotVel_xy;
 
+            Vector2 dragDirection = -V_shooter_xy;
+            
+            Vector2 velocityVithDragComp = GetInitialVelocityAfterDrag(V_shooter_xy, 0.0000508198920953f, timeOfFlight, 0.05f);
+
+
+
+            //V_shooter_xy = velocityPostDrag;
+
+
             // 4) Rotate into ROBOT frame (turret frame if turret is robot-relative)
             float cosYaw = Mathf.Cos(-robotYaw);
             float sinYaw = Mathf.Sin(-robotYaw);
-zz
+
             Vector2 V_turret = new Vector2(
-                V_shooter_xy.x * cosYaw - V_shooter_xy.y * sinYaw,
-                V_shooter_xy.x * sinYaw + V_shooter_xy.y * cosYaw
+                velocityVithDragComp.x * cosYaw - velocityVithDragComp.y * sinYaw,
+                velocityVithDragComp.x * sinYaw + velocityVithDragComp.y * cosYaw
             );
 
             // 5) Turret angle command
@@ -276,13 +415,17 @@ zz
 
         }
 
+        vRequired = (V_required_xy);
 
 
         // Account for tangential movement relative to the goal
-        
-        
+    
 
         lerpTable.putNewTimeOfFlight(timeOfFlight);
+
+        //turretAngleDeg += tangentialVelocityDragOffset * tangentialVelocity;
+
+        //print(tangentialVelocity);
 
         //print("Time of Flight: " + timeOfFlight);
 

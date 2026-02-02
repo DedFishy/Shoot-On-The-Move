@@ -36,6 +36,7 @@ public class ShooterController : MonoBehaviour
     private bool doNextShot = false;
 
 
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -85,12 +86,14 @@ public class ShooterController : MonoBehaviour
     }
     public void shootNoDelay()
     {
+
+        print("Required velocity: " + shootOnTheMove.vRequired);
         if (shootOnTheMove.getDistanceToTarget() > 7.5) return;
 
         counter.countShotTaken();
         shotStartTime = Time.time;
 
-        print("Calc'd time of flight: " + lerp.getOffsetTimeOfFlight());
+        //print("Calc'd time of flight: " + lerp.getOffsetTimeOfFlight());
     
         GameObject newBall = Instantiate(ball, transform.position + new UnityEngine.Vector3(-0.1f, 0.1f, 0), ball.transform.rotation, transform.parent.parent);
         newBall.SetActive(true);

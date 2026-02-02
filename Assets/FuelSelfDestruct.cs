@@ -24,6 +24,7 @@ public class FuelSelfDestruct : MonoBehaviour
 
         if (initialVelocity.magnitude < Mathf.Epsilon && rb.linearVelocity.magnitude > 0.1) {
             initialVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
+            print("vertical velocity: " + rb.linearVelocity.y + " (" + rb.linearVelocity.y/rb.linearVelocity.magnitude*100 + "%)");
         }
         if (transform.position.y < -50) Destroy(gameObject);
 

@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class ShootOnTheMove : MonoBehaviour
 {
@@ -193,33 +194,48 @@ public class ShootOnTheMove : MonoBehaviour
     - Repeat this until the average velocity with initial guess is equal to required velocity
     */
 
-    Vector2 GetInitialVelocityAfterDrag(Vector2 requiredVelocity, Vector2 initialVelocity, float dragCoeff, float timeOfFlight, float timeInterval, int numIterations2)
+    Vector2 GetInitialVelocityAccountingForDrag(Vector2 requiredHorizontalDisplacement, Vector2 initialHorizontalVelocity, float initialVerticalVelocity, float dragCoeff, float timeOfFlight, float timeInterval, int numIterations2)
     {
-        Vector2 velocityWithDrag = initialVelocity;
+        Vector3 velocityWithDrag = new Vector3(initialHorizontalVelocity.x, initialVerticalVelocity, initialHorizontalVelocity.y);
 
+        Vector2 horizontalDisplacementWithDrag = Vector2.zero;
 
+        Vector3 velocityAtPreviousFrame = initialHorizontalVelocity;
 
-        Vector2 averageVelocity = Vector2.zero;
+        //Vector2 averageVelocity = Vector2.zero;
         int numIterations = 0;
-        for (float i = 0; i < timeOfFlight; i += timeInterval)
+        for (float i = 0; i < timeOfFlight + timeInterval; i += timeInterval)
         {
+            if (i >= timeOfFlight)
+            {
+                timeInterval = timeOfFlight - (i - timeInterval);
+            }
             velocityWithDrag -= timeInterval * (dragCoeff * (velocityWithDrag.magnitude*velocityWithDrag) / 0.01f); // 0.01=mass of ball
-            averageVelocity += velocityWithDrag;
+            Vector3 velocityFrameAvg = (velocityAtPreviousFrame + velocityWithDrag) / 2;
+            horizontalDisplacementWithDrag += new Vector2(velocityFrameAvg.x, velocityFrameAvg.z) * timeInterval;
+            //averageVelocity += velocityWithDrag;
+            velocityAtPreviousFrame = velocityWithDrag;
             numIterations++;
         }
-        averageVelocity /= numIterations;
-        Vector2 delta = (requiredVelocity - averageVelocity);
+        //averageVelocity /= numIterations;
+        //Vector2 delta = (requiredVelocity - averageVelocity);
         //initialVelocity = (requiredVelocity * 2) - velocityWithDrag;
+        Vector2 delta = requiredHorizontalDisplacement - horizontalDisplacementWithDrag;
 
-        if ((averageVelocity - requiredVelocity).magnitude < 0.1) {
-            /*print(numIterations2);
-            print(averageVelocity);
+        if (Mathf.Abs(delta.magnitude) < 0.1 || numIterations2 > 99) {
+            print("--- DRAG ALGORITHM ---");
+            print("Iterations: " + numIterations2);
+            print("Delta: " + delta);
+            print("Displacement after drag: " + horizontalDisplacementWithDrag + " versus required: " + requiredHorizontalDisplacement);
+            print("Initial horizontal velocity: " + initialHorizontalVelocity);
+            print("---                ---");
+            /*print(averageVelocity );
             print(requiredVelocity);*/
 
-            return initialVelocity;
+            return initialHorizontalVelocity;
         }
 
-        else return GetInitialVelocityAfterDrag(requiredVelocity, initialVelocity + delta, dragCoeff, timeOfFlight, timeInterval, numIterations2+1);
+        else return GetInitialVelocityAccountingForDrag(requiredHorizontalDisplacement, initialHorizontalVelocity + delta / timeOfFlight, initialVerticalVelocity, dragCoeff, timeOfFlight, timeInterval, numIterations2+1);
 
         
         /*Vector2 currentAverageVelocity = (velocityWithDrag + intialVelocity) / 2;
@@ -237,11 +253,6 @@ public class ShootOnTheMove : MonoBehaviour
             delta = requiredVelocity - currentAverageVelocity;
         }*/
 
-    }
-
-    Vector2 GetInitialVelocityAfterDrag(Vector2 requiredVelocity, float dragCoeff, float timeOfFlight, float timeInterval)
-    {
-        return GetInitialVelocityAfterDrag(requiredVelocity, requiredVelocity, dragCoeff, timeOfFlight, timeInterval, 0);
     }
 
     private Vector2[] velocityMeasurementFrames = new Vector2[6];
@@ -361,6 +372,9 @@ public class ShootOnTheMove : MonoBehaviour
 
         float turretAngleDeg = 0;
 
+        float hoodAngle = (float)lerpTable.getAngle(offsetDistance);
+        float flywheelSpeed = (float)lerpTable.getVelocity(offsetDistance);
+
 
         for (int i = 0; i < numberOfAlgorithmIterations; i++)
         {
@@ -389,7 +403,7 @@ public class ShootOnTheMove : MonoBehaviour
 
             Vector2 dragDirection = -V_shooter_xy;
             
-            Vector2 velocityVithDragComp = GetInitialVelocityAfterDrag(V_shooter_xy, 0.0000508198920953f, timeOfFlight, 0.05f);
+            Vector2 velocityVithDragComp = GetInitialVelocityAccountingForDrag(D_xy, V_shooter_xy, flywheelSpeed * Mathf.Sin(Mathf.Deg2Rad * hoodAngle), 0.0000508198920953f, timeOfFlight, 0.05f, 0);
 
 
 
@@ -412,6 +426,9 @@ public class ShootOnTheMove : MonoBehaviour
             distanceVector = V_shooter_xy * timeOfFlight;
 
             timeOfFlight = (float)lerpTable.getTimeOfFlight(distanceVector.magnitude);
+
+            hoodAngle = (float)lerpTable.getAngle(distanceVector.magnitude);
+            flywheelSpeed = (float)lerpTable.getVelocity(distanceVector.magnitude);
 
         }
 
@@ -451,12 +468,12 @@ public class ShootOnTheMove : MonoBehaviour
         
         magnitudeOfTurretAngleOffset *= 0f;
 
-        shooterController.setVelocity((float)lerpTable.getVelocity(distance));
+        shooterController.setVelocity(flywheelSpeed);
 
         //print(offsetTurretAngle + " vs " + notOffsetTurretAngle);
         //print(offsetTurretAngle - notOffsetTurretAngle);
 
-        hoodController.setAngles( (float)lerpTable.getAngle(distance),
+        hoodController.setAngles( hoodAngle,
             turretAngleDeg);
             //(Mathf.Atan2(tangentialVelocity * timeOfFlight, distance) - angleCompensationFactor) * Mathf.Rad2Deg + notOffsetTurretAngle);
 

@@ -4853,6 +4853,7 @@ MonoBehaviour:
   radialVelocityReleaseTime: 0
   radialVelocity: 0
   offsetPoseCube: {fileID: 755377376}
+  compensationFactor: 0.25
   tangentialVelocityDragOffset: 0
   timeToGetToNewPositionTurretHood: 0
   vRequired: {x: 0, y: 0}

@@ -27,6 +27,8 @@ public class ShootOnTheMove : MonoBehaviour
 
     public GameObject offsetPoseCube;
 
+    public float compensationFactor;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -321,21 +323,27 @@ public class ShootOnTheMove : MonoBehaviour
         float angularRobotVelocity = getAngularVelocity();
         var targetDifference = targetPosition - turretPosition;
 
-        var pureTargetDifference = targetPosition - turretPosition;
+        Vector2 pureTargetDifference = targetPosition - turretPosition;
 
         Vector2 robotToTurret = turretPosition - robotPose;
 
         float angleBetweenGoalAndRobot = -Mathf.Atan2(targetDifference.y, targetDifference.x);
-        radialVelocity = linearVelocity.x * Mathf.Cos(angleBetweenGoalAndRobot) - linearVelocity.y * Mathf.Sin(angleBetweenGoalAndRobot);
+        //radialVelocity = linearVelocity.x * Mathf.Cos(angleBetweenGoalAndRobot) - linearVelocity.y * Mathf.Sin(angleBetweenGoalAndRobot);
         //print("Radial velocity: " + radialVelocity);
-        float tangentialVelocity = linearVelocity.x * Mathf.Sin(angleBetweenGoalAndRobot) + linearVelocity.y * Mathf.Cos(angleBetweenGoalAndRobot);
+        //float tangentialVelocity = linearVelocity.x * Mathf.Sin(angleBetweenGoalAndRobot) + linearVelocity.y * Mathf.Cos(angleBetweenGoalAndRobot);
+        //print("Tangential velocity: " + tangentialVelocity);
 
         //float projectionScalar = (linearVelocity.x * targetDifference.x + linearVelocity.y * targetDifference.y) / (targetDifference.x * targetDifference.x + targetDifference.y + targetDifference.y);
 
         //float tangentialVelocity = (projectionScalar * targetDifference).magnitude;
         //print("Tangential velocity: " + tangentialVelocity);
 
-        
+        float lengthOfProjectionOverMagnitude = ((linearVelocity.x * pureTargetDifference.x + linearVelocity.y * pureTargetDifference.y) / Mathf.Pow(pureTargetDifference.magnitude, 2));
+        Vector2 radialVelocity = pureTargetDifference * lengthOfProjectionOverMagnitude;
+        Vector2 tangentialVelocity = linearVelocity - radialVelocity;
+
+        print("Radial velocity: " + radialVelocity);
+        print("Tangential velocity: " + tangentialVelocity);
 
 
         float robotRotation = getRotation() * Mathf.Deg2Rad;
@@ -360,7 +368,7 @@ public class ShootOnTheMove : MonoBehaviour
         //Vector2 offset = Vector2.zero;
         float offsetDistance = pureTargetDifference.magnitude;
 
-        float angleCompensationFactor = 0.5f * (tangentialVelocity == 0 ? 0 : Math.Sign(pureTargetDifference.y));
+        //float angleCompensationFactor = 0.5f * (tangentialVelocity == 0 ? 0 : Math.Sign(pureTargetDifference.y));
 
         
 
@@ -401,9 +409,9 @@ public class ShootOnTheMove : MonoBehaviour
             // 3) Shooter-relative horizontal velocity
             Vector2 V_shooter_xy = V_required_xy - robotVel_xy;
 
-            Vector2 dragDirection = -V_shooter_xy;
+            //Vector2 dragDirection = -V_shooter_xy;
             
-            Vector2 velocityVithDragComp = GetInitialVelocityAccountingForDrag(D_xy, V_shooter_xy, flywheelSpeed * Mathf.Sin(Mathf.Deg2Rad * hoodAngle), 0.0000508198920953f, timeOfFlight, 0.05f, 0);
+            //Vector2 velocityVithDragComp = GetInitialVelocityAccountingForDrag(D_xy, V_shooter_xy, flywheelSpeed * Mathf.Sin(Mathf.Deg2Rad * hoodAngle), 0.0000508198920953f, timeOfFlight, 0.05f, 0);
 
 
 
@@ -415,12 +423,20 @@ public class ShootOnTheMove : MonoBehaviour
             float sinYaw = Mathf.Sin(-robotYaw);
 
             Vector2 V_turret = new Vector2(
-                velocityVithDragComp.x * cosYaw - velocityVithDragComp.y * sinYaw,
-                velocityVithDragComp.x * sinYaw + velocityVithDragComp.y * cosYaw
+                V_shooter_xy.x * cosYaw - V_shooter_xy.y * sinYaw,
+                V_shooter_xy.x * sinYaw + V_shooter_xy.y * cosYaw
             );
 
             // 5) Turret angle command
             turretAngleDeg = Mathf.Atan2(V_turret.y, -V_turret.x) * Mathf.Rad2Deg;
+
+            turretAngleDeg += tangentialVelocity.magnitude * Mathf.Sign(linearVelocity.x) * distanceVector.magnitude * compensationFactor;
+
+            float originalDistanceDirection = Mathf.Atan2(distanceVector.y, distanceVector.x);
+
+            float angleB = Mathf.PI - (Mathf.PI/2 - originalDistanceDirection);
+
+            float distanceWithDrag = (distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Abs(turretAngleDeg - originalDistanceDirection - angleB))) * Mathf.Sin(angleB);
 
 
             distanceVector = V_shooter_xy * timeOfFlight;

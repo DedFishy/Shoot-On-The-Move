@@ -30,6 +30,8 @@ public class ShootOnTheMove : MonoBehaviour
     public float compensationFactor;
     public float distanceCompensationFactor;
 
+    public float k;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -269,6 +271,7 @@ public class ShootOnTheMove : MonoBehaviour
         var targetPosition = getTargetPosition();
         var turretPosition = convertToVector2(turretController.getTranslation());
         Vector2 robotPose = getTranslation();
+        
 
         /*for (int i = 1; i < velocityMeasurementFrames.Length; i++)
         {
@@ -343,8 +346,8 @@ public class ShootOnTheMove : MonoBehaviour
         Vector2 radialVelocity = pureTargetDifference * lengthOfProjectionOverMagnitude;
         Vector2 tangentialVelocity = linearVelocity - radialVelocity;
 
-        print("Radial velocity: " + radialVelocity);
-        print("Tangential velocity: " + tangentialVelocity);
+        //print("Radial velocity: " + radialVelocity);
+        //print("Tangential velocity: " + tangentialVelocity);
 
 
         float robotRotation = getRotation() * Mathf.Deg2Rad;
@@ -396,6 +399,9 @@ public class ShootOnTheMove : MonoBehaviour
 
                     // Inputs (FIELD FRAME)
             Vector2 goalPos_xy = targetPosition;          // (x, y)
+
+            //goalPos_xy.x += tangentialVelocity.x * compensationFactor * distanceVector.magnitude + radialVelocity.x * compensationFactor * distanceVector.magnitude;
+            //goalPos_xy.y += tangentialVelocity.y * compensationFactor * distanceVector.magnitude + radialVelocity.y * compensationFactor * distanceVector.magnitude;
             Vector2 shooterExitPos_xy = turretPosition;   // (x, y)
             Vector2 robotVel_xy = linearVelocity;         // (vx, vy) field-relative
             float robotYaw = robotRotation;              // radians, field-relative
@@ -405,7 +411,7 @@ public class ShootOnTheMove : MonoBehaviour
             Vector2 D_xy = goalPos_xy - shooterExitPos_xy;
 
             // 2) Required FIELD-relative ball horizontal velocity
-            V_required_xy = D_xy / t;
+            V_required_xy = /*D_xy * k / (float)(1 - Math.Pow(Math.E, -k * timeOfFlight));*/D_xy / t;
 
             // 3) Shooter-relative horizontal velocity
             Vector2 V_shooter_xy = V_required_xy - robotVel_xy;
@@ -419,6 +425,28 @@ public class ShootOnTheMove : MonoBehaviour
             //V_shooter_xy = velocityPostDrag;
 
 
+            
+
+            distanceVector = V_shooter_xy * timeOfFlight;
+
+            float groundDistance = distanceVector.magnitude;
+
+            // 1. Account for Drag: "Virtual Distance"
+            // The ball loses energy over time. We pretend the target is further away.
+            // A simple approximation: Dist_virtual = Dist_actual * (1 + k * Dist_actual)
+            float virtualDistance = groundDistance * (1 + k * groundDistance);
+
+            // 2. Pass the VIRTUAL distance to your LUT
+            hoodAngle = (float)lerpTable.getAngle(virtualDistance);
+            flywheelSpeed = (float)lerpTable.getVelocity(virtualDistance);
+            timeOfFlight = (float)lerpTable.getTimeOfFlight(virtualDistance);
+
+            // 3. Recalculate based on the new timeOfFlight from the LUT
+            V_required_xy = D_xy / timeOfFlight;
+            V_shooter_xy = V_required_xy - robotVel_xy;
+            
+            // ... update turretAngleDeg ...
+
             // 4) Rotate into ROBOT frame (turret frame if turret is robot-relative)
             float cosYaw = Mathf.Cos(-robotYaw);
             float sinYaw = Mathf.Sin(-robotYaw);
@@ -430,12 +458,11 @@ public class ShootOnTheMove : MonoBehaviour
 
             // 5) Turret angle command
             turretAngleDeg = Mathf.Atan2(V_turret.y, -V_turret.x) * Mathf.Rad2Deg;
+ 
 
-            distanceVector = V_shooter_xy * timeOfFlight;
 
-
-            float dragTurretOffset = /*(tangentialVelocity.magnitude * tangentialVelocity.magnitude) * -Mathf.Sign(linearVelocity.y) * distanceVector.magnitude * compensationFactor*/ + 
-            -Mathf.Sign(linearVelocity.y) * Mathf.Sin((float)lerpTable.getAngle(distanceVector.magnitude) * Mathf.Deg2Rad) * (float)lerpTable.getVelocity(distanceVector.magnitude) * distanceCompensationFactor * (tangentialVelocity.magnitude);
+            //float dragTurretOffset = /*(tangentialVelocity.magnitude * tangentialVelocity.magnitude) * -Mathf.Sign(linearVelocity.y) * distanceVector.magnitude * compensationFactor*/ + 
+            //-Mathf.Sign(linearVelocity.y) * Mathf.Sin((float)lerpTable.getAngle(distanceVector.magnitude) * Mathf.Deg2Rad) * (float)lerpTable.getVelocity(distanceVector.magnitude) * distanceCompensationFactor * (tangentialVelocity.magnitude);
 
 
             /*float originalDistanceDirection = Mathf.Atan2(distanceVector.y, distanceVector.x);
@@ -444,18 +471,36 @@ public class ShootOnTheMove : MonoBehaviour
 
             float distanceWithDrag = (distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Abs(turretAngleDeg - originalDistanceDirection - angleB))) * Mathf.Sin(angleB);*/
 
-            float newDistance = (distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Deg2Rad*(turretAngleDeg+90) - dragTurretOffset*Mathf.Deg2Rad)) * Mathf.Sin(Mathf.Deg2Rad*(turretAngleDeg+90));
 
-            turretAngleDeg += dragTurretOffset;
+            //turretAngleDeg += dragTurretOffset;
+
+            //float dragTurretOffset = (tangentialVelocity.magnitude * tangentialVelocity.magnitude) * -Mathf.Sign(linearVelocity.y) * distanceVector.magnitude * compensationFactor;
+
+
+            //float newDistance = distanceVector.magnitude + Mathf.Abs(dragTurretOffset) * distanceCompensationFactor; //(distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Deg2Rad*(turretAngleDeg+90) - dragTurretOffset*Mathf.Deg2Rad)) * Mathf.Sin(Mathf.Deg2Rad*(turretAngleDeg+90));
+            
+            //float newDistance = distanceVector.magnitude + Mathf.Pow(linearVelocity.magnitude, 2f) * distanceCompensationFactor * Mathf.Sign(radialVelocity.x + radialVelocity.y);
+
+            //turretAngleDeg += dragTurretOffset;
 
 
 
-            timeOfFlight = (float)lerpTable.getTimeOfFlight(distanceVector.magnitude);
+            //timeOfFlight = (float)lerpTable.getTimeOfFlight(distanceVector.magnitude); // maybe newDistance
 
-            hoodAngle = (float)lerpTable.getAngle(newDistance);
-            flywheelSpeed = (float)lerpTable.getVelocity(newDistance);
+
+            //float dragTurretOffset = (tangentialVelocity.magnitude * tangentialVelocity.magnitude) * distanceVector.magnitude * compensationFactor * -Mathf.Sign(linearVelocity.y);
+
+            //turretAngleDeg += dragTurretOffset;
+
+
+
+            //hoodAngle = (float)lerpTable.getAngle(distanceVector.magnitude);
+            //flywheelSpeed = (float)lerpTable.getVelocity(distanceVector.magnitude);
 
         }
+
+
+        
 
         vRequired = (V_required_xy);
 

@@ -634,7 +634,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 191348490}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b79faf320bab35982b9c4ad3f2060c33, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -4368,7 +4368,7 @@ Transform:
   m_GameObject: {fileID: 1493696445}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.637, y: 1.4521, z: 7.189}
+  m_LocalPosition: {x: 12.637, y: 1.103, z: 7.189}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4853,8 +4853,9 @@ MonoBehaviour:
   radialVelocityReleaseTime: 0
   radialVelocity: 0
   offsetPoseCube: {fileID: 755377376}
-  compensationFactor: 0
-  distanceCompensationFactor: 0.25
+  compensationFactor: 0.05
+  distanceCompensationFactor: 0.15
+  k: 0.01
   tangentialVelocityDragOffset: 0
   timeToGetToNewPositionTurretHood: 0
   vRequired: {x: 0, y: 0}
@@ -5818,7 +5819,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1942873657}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 20ef0bea0c15537a4960ae0d7aec7807, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0

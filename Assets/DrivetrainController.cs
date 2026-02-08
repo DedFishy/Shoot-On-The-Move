@@ -60,7 +60,7 @@ public class DrivetrainController : MonoBehaviour
             if (drivingVector.magnitude != 0)
             {
                 maxSpeedAddition += 2f * Time.deltaTime;
-                maxSpeedAddition = Mathf.Min(maxSpeedAddition, 2f);//3.5f);
+                maxSpeedAddition = Mathf.Min(maxSpeedAddition, 2f);
                 rigidbody.linearVelocity = convertDriveVectorToForceVector(drivingVector * (maxTranslationalVelocity + maxSpeedAddition));
             } else {
                 maxSpeedAddition = 0;

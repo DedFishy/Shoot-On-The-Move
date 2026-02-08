@@ -4849,7 +4849,7 @@ MonoBehaviour:
   driveTrainController: {fileID: 1709230120}
   lerpTable: {fileID: 1903198269}
   numberOfAlgorithmIterations: 20
-  radialVelocityTestX: -2
+  radialVelocityTestX: -4
   radialVelocityReleaseTime: 0
   radialVelocity: 0
   offsetPoseCube: {fileID: 755377376}

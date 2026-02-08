@@ -28,6 +28,7 @@ public class ShootOnTheMove : MonoBehaviour
     public GameObject offsetPoseCube;
 
     public float compensationFactor;
+    public float distanceCompensationFactor;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -430,21 +431,29 @@ public class ShootOnTheMove : MonoBehaviour
             // 5) Turret angle command
             turretAngleDeg = Mathf.Atan2(V_turret.y, -V_turret.x) * Mathf.Rad2Deg;
 
-            turretAngleDeg += tangentialVelocity.magnitude * Mathf.Sign(linearVelocity.x) * distanceVector.magnitude * compensationFactor;
+            distanceVector = V_shooter_xy * timeOfFlight;
 
-            float originalDistanceDirection = Mathf.Atan2(distanceVector.y, distanceVector.x);
+
+            float dragTurretOffset = /*(tangentialVelocity.magnitude * tangentialVelocity.magnitude) * -Mathf.Sign(linearVelocity.y) * distanceVector.magnitude * compensationFactor*/ + 
+            -Mathf.Sign(linearVelocity.y) * Mathf.Sin((float)lerpTable.getAngle(distanceVector.magnitude) * Mathf.Deg2Rad) * (float)lerpTable.getVelocity(distanceVector.magnitude) * distanceCompensationFactor * (tangentialVelocity.magnitude);
+
+
+            /*float originalDistanceDirection = Mathf.Atan2(distanceVector.y, distanceVector.x);
 
             float angleB = Mathf.PI - (Mathf.PI/2 - originalDistanceDirection);
 
-            float distanceWithDrag = (distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Abs(turretAngleDeg - originalDistanceDirection - angleB))) * Mathf.Sin(angleB);
+            float distanceWithDrag = (distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Abs(turretAngleDeg - originalDistanceDirection - angleB))) * Mathf.Sin(angleB);*/
+
+            float newDistance = (distanceVector.magnitude / Mathf.Sin(Mathf.PI - Mathf.Deg2Rad*(turretAngleDeg+90) - dragTurretOffset*Mathf.Deg2Rad)) * Mathf.Sin(Mathf.Deg2Rad*(turretAngleDeg+90));
+
+            turretAngleDeg += dragTurretOffset;
 
 
-            distanceVector = V_shooter_xy * timeOfFlight;
 
             timeOfFlight = (float)lerpTable.getTimeOfFlight(distanceVector.magnitude);
 
-            hoodAngle = (float)lerpTable.getAngle(distanceVector.magnitude);
-            flywheelSpeed = (float)lerpTable.getVelocity(distanceVector.magnitude);
+            hoodAngle = (float)lerpTable.getAngle(newDistance);
+            flywheelSpeed = (float)lerpTable.getVelocity(newDistance);
 
         }
 

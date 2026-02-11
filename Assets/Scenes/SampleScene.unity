@@ -4355,7 +4355,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.25
+  m_Radius: 0.47
   m_Height: 0.25
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -4855,7 +4855,7 @@ MonoBehaviour:
   offsetPoseCube: {fileID: 755377376}
   compensationFactor: 0.05
   distanceCompensationFactor: 0.15
-  k: 0.01
+  k: 0.0075
   tangentialVelocityDragOffset: 0
   timeToGetToNewPositionTurretHood: 0
   vRequired: {x: 0, y: 0}

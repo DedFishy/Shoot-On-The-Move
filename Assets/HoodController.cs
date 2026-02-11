@@ -32,6 +32,8 @@ public class HoodController : MonoBehaviour
     {
     }
 
+    
+
     public void setRotation(float targetRotation, float turretRotation)
     {
         weightedTurretAngle = currentFrameWeightTurret * weightedTurretAngle + turretRotation * (1-currentFrameWeightTurret);

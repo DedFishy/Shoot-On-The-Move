@@ -223,7 +223,7 @@ MonoBehaviour:
   lerp: {fileID: 1903198269}
   shotStartTime: 0
   counter: {fileID: 396470257}
-  useOffsetSlider: 0
+  useOffsetSlider: 1
   offsetSlider: {fileID: 816043663}
   shootOnTheMove: {fileID: 1709230121}
   phaseTime: 0
@@ -245,7 +245,7 @@ MonoBehaviour:
   currentFrameWeightTurret: 0
   currentFrameWeightHood: 0
   lockTo180: 0
-  useOffsetSlider: 0
+  useOffsetSlider: 1
   offsetSlider: {fileID: 1838758414}
 --- !u!114 &82428380
 MonoBehaviour:
@@ -4849,9 +4849,9 @@ MonoBehaviour:
   driveTrainController: {fileID: 1709230120}
   lerpTable: {fileID: 1903198269}
   numberOfAlgorithmIterations: 20
-  radialVelocityTestX: -4
-  radialVelocityReleaseTime: 0
-  radialVelocity: 0
+  radialVelocityTestX: -2
+  radialVelocityReleaseTime: 4
+  radialVelocity: {x: 0, y: 0}
   offsetPoseCube: {fileID: 755377376}
   compensationFactor: 0.05
   distanceCompensationFactor: 0.15

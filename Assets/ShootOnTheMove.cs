@@ -23,7 +23,7 @@ public class ShootOnTheMove : MonoBehaviour
     public float radialVelocityTestX;
     public float radialVelocityReleaseTime;
 
-    public float radialVelocity;
+    public Vector2 radialVelocity;
 
     public GameObject offsetPoseCube;
 
@@ -47,7 +47,7 @@ public class ShootOnTheMove : MonoBehaviour
 
     void FixedUpdate()
     {
-        ElijahSpecial();
+        ElijahSpecialLerpEdition();
     }
 
     public float getDistanceToTarget() {return (getTargetPosition() - convertToVector2(turretController.getTranslation())).magnitude;}
@@ -77,6 +77,49 @@ public class ShootOnTheMove : MonoBehaviour
     float getAngularVelocity()
     {
         return GetComponent<Rigidbody>().angularVelocity.y;
+    }
+
+    void ElijahSpecialLerpEdition()
+    {
+        var targetPosition = getTargetPosition();
+        var turretPosition = convertToVector2(turretController.getTranslation());
+        Vector2 robotPose = getTranslation();
+        
+        Vector2 linearVelocity = getLinearVelocity();
+
+
+        float angularRobotVelocity = getAngularVelocity();
+        var targetDifference = targetPosition - turretPosition;
+
+        Vector2 pureTargetDifference = targetPosition - turretPosition;
+
+        Vector2 robotToTurret = turretPosition - robotPose;
+
+        float angleBetweenGoalAndRobot = -Mathf.Atan2(targetDifference.y, targetDifference.x);
+
+        float lengthOfProjectionOverMagnitude = ((linearVelocity.x * pureTargetDifference.x + linearVelocity.y * pureTargetDifference.y) / Mathf.Pow(pureTargetDifference.magnitude, 2));
+        radialVelocity = pureTargetDifference * lengthOfProjectionOverMagnitude;
+        Vector2 tangentialVelocity = linearVelocity - radialVelocity;
+
+        //print("Radial velocity: " + radialVelocity);
+        //print("Tangential velocity: " + tangentialVelocity);
+
+        float timeOfFlight = (float)lerpTable.getTimeOfFlight();
+
+        float hoodAngle = (float)lerpTable.getAngle(pureTargetDifference.magnitude);
+        float flywheelSpeed = (float)lerpTable.getVelocity(pureTargetDifference.magnitude);
+
+        lerpTable.putNewTimeOfFlight(timeOfFlight);
+
+        offsetPoseCube.transform.position = convertVec2To3(targetDifference + robotPose);
+
+
+        float notOffsetTurretAngle = Mathf.Rad2Deg * Mathf.Atan2(pureTargetDifference.y, -pureTargetDifference.x);        
+
+        shooterController.setVelocity(flywheelSpeed);
+
+        hoodController.setAngles( hoodAngle,
+            notOffsetTurretAngle);
     }
     
 

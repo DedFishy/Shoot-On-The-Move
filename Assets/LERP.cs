@@ -49,7 +49,7 @@ public class LERP : MonoBehaviour
     public double getAngle(double value) {
         
         int[] indices = findClosestIndices(value, 0);
-        return findLerpValue(indices[0], indices[1], value, 1, 0);// + offsetLERP.getAngleOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
+        return findLerpValue(indices[0], indices[1], value, 1, 0) + offsetLERP.getAngleOffset(shootOnTheMove.radialVelocity.magnitude) * getOffsetMultiplier();
     }
     public double getAngle()
     {
@@ -58,7 +58,7 @@ public class LERP : MonoBehaviour
     public double getVelocity(double value) {
         
         int[] indices = findClosestIndices(value, 0);
-        return findLerpValue(indices[0], indices[1], value, 2, 0);// + offsetLERP.getVelocityOffset(shootOnTheMove.radialVelocity) * getOffsetMultiplier();
+        return findLerpValue(indices[0], indices[1], value, 2, 0) + offsetLERP.getVelocityOffset(shootOnTheMove.radialVelocity.magnitude) * getOffsetMultiplier();
     }
     public double getVelocity()
     {
@@ -68,6 +68,11 @@ public class LERP : MonoBehaviour
     public double getOffsetMultiplier()
     {
         return getOffsetTimeOfFlight();// * (getDistance() / 50 + 1);
+    }
+
+    public double getJustVelocityMultiplier()
+    {
+        
     }
 
     public double getTimeOfFlight(double value) {

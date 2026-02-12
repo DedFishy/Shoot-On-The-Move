@@ -47,7 +47,7 @@ public class DrivetrainController : MonoBehaviour
             transform.position = pos;
             rigidbody.position = pos;
         }
-        /*if (endDriveTestTimestamp > Time.fixedTime && (Math.Abs(lerpTable.getDistance()) < 5.5))
+        if (endDriveTestTimestamp > Time.fixedTime && (Math.Abs(lerpTable.getDistance()) < 5.5))
         {
             rigidbody.linearVelocity = new Vector2(driveTestVelocity, 0);
 
@@ -55,7 +55,7 @@ public class DrivetrainController : MonoBehaviour
             if (rigidbody.linearVelocity.magnitude < maxTranslationalVelocity * drivingVector.magnitude) {
                 rigidbody.AddForce(convertDriveVectorToForceVector(drivingVector * translationalAcceleration * rigidbody.linearDamping), ForceMode.Acceleration);
             }
-            */
+            
             
             if (drivingVector.magnitude != 0)
             {
@@ -68,9 +68,9 @@ public class DrivetrainController : MonoBehaviour
             
             /*if (rigidbody.angularVelocity.magnitude <= maxRotationalVelocity) {
                 rigidbody.AddTorque(new Vector3(0, rotationAxis * rotationalAcceleration, 0), ForceMode.Force);
-            }
+            }*/
             
-        }*/
+        }
         
 
     }

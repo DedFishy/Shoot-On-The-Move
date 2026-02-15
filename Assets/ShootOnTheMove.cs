@@ -264,21 +264,79 @@ public class ShootOnTheMove : MonoBehaviour
 
     }
 
-    private Vector2[] velocityMeasurementFrames = new Vector2[6];
-    private Vector2[] accelerationMeasurementFrames = new Vector2[6];
-    private Vector2[] jerkMeasurementFrames = new Vector2[6];
+    private Vector2[,] derivativesOfVelocity =  new Vector2[3,2]; // velocity onwards
+    private Vector2[] valuesOfDerivatiesOfVelocity = new Vector2[2]; // acceleration onwards
+    private double[] frameTimes =  new double[4];
+
+    public float lookaheadTimeSeconds = 0.8f;
+    public float phaseTimeSeconds = 0.03f;
+
+    private float nextShotTime = -1;
+    private bool hasShotInCurrentPhase;
 
     public Vector2 vRequired;
 
     void ElijahSpecial()
     {
+        int numFrames = derivativesOfVelocity.GetLength(1);
+        int numDerivatives = derivativesOfVelocity.GetLength(0)-1;
+        for (int derivative = 0; derivative < numDerivatives; derivative++) {
+            
+            for (int frame = 0; frame < numFrames-1; frame++)
+            {
+                derivativesOfVelocity[derivative,frame] = derivativesOfVelocity[derivative,frame + 1];
+            }
+        }
+
+        derivativesOfVelocity[0,numFrames-1] = getLinearVelocity();
+
+        for (int derivative = 0; derivative < numDerivatives; derivative++)
+        {   
+            valuesOfDerivatiesOfVelocity[derivative] = (derivativesOfVelocity[derivative, numFrames-1] - derivativesOfVelocity[derivative, 0]) / 0.02f / numFrames;
+            derivativesOfVelocity[derivative+1, numFrames-1] = valuesOfDerivatiesOfVelocity[derivative];
+        }
+
+        Vector2 extraVelocity = Vector2.zero;
+
+        float currentTime = Time.time;
+
+        for (int derivative = numDerivatives - 1; derivative >= 0; derivative--)
+        {
+            extraVelocity += valuesOfDerivatiesOfVelocity[derivative] * (nextShotTime - currentTime);
+        }
+
+
+        //print("Acceleration: " + acceleration);
+        //print("Jerk: " + jerk);
+
+        Vector2 velocity = getLinearVelocity();
+
+        velocity += extraVelocity;
+
+        if (nextShotTime < currentTime)
+        {
+            if (!hasShotInCurrentPhase)
+            {
+                //shooterController.shootNoInput();
+            }
+            hasShotInCurrentPhase = false;
+            nextShotTime = currentTime + lookaheadTimeSeconds + phaseTimeSeconds;
+            //print("Current time: " + nextShotTime);
+            //print("New shot time: " + nextShotTime);
+        } else if (nextShotTime < currentTime + phaseTimeSeconds && !hasShotInCurrentPhase)
+        {
+            if (Math.Abs(hoodController.turretDelta) < 8 && Math.Abs(hoodController.hoodDelta) < 6) shooterController.shootNoInput();
+            hasShotInCurrentPhase = true;
+        }
         var targetPosition = getTargetPosition();
         Vector2 robotPose = getTranslation();
         var turretPosition = robotPose;
 
-        Vector2 lookaheadDelta = getLinearVelocity() * 80f/1000f;
+        Vector2 lookaheadDelta = velocity * (nextShotTime-currentTime);
         robotPose += lookaheadDelta;
         turretPosition += lookaheadDelta;
+
+        //print(lookaheadDelta);
 
         /*for (int i = 1; i < velocityMeasurementFrames.Length; i++)
         {
@@ -328,7 +386,7 @@ public class ShootOnTheMove : MonoBehaviour
         print("Acceleration: " + acceleration + " (" + acceleration.magnitude + ")");
 
         robotPose += linearVelocity * timeToGetToNewPositionTurretHood;*/
-        Vector2 linearVelocity = getLinearVelocity();
+        Vector2 linearVelocity = velocity;
 
 
         float angularRobotVelocity = getAngularVelocity();
@@ -373,7 +431,6 @@ public class ShootOnTheMove : MonoBehaviour
                     * (robotToTurret.x * Mathf.Cos(robotRotation)
                         - robotToTurret.y * Mathf.Sin(robotRotation));
 
-        print(robotToTurret);
 
         float timeOfFlight = (float)lerpTable.getTimeOfFlight();
         

@@ -226,6 +226,7 @@ MonoBehaviour:
   useOffsetSlider: 0
   offsetSlider: {fileID: 816043663}
   shootOnTheMove: {fileID: 1709230121}
+  phaseTime: 0
 --- !u!114 &82428379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4869,8 +4870,6 @@ MonoBehaviour:
   hoodVelocityLookaheadConstant: 0
   tangentialVelocityDragOffset: 0
   timeToGetToNewPositionTurretHood: 0
-  lookaheadTimeSeconds: 0.8
-  phaseTimeSeconds: 0.02
   vRequired: {x: 0, y: 0}
 --- !u!1 &1717940510 stripped
 GameObject:

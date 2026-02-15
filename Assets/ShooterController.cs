@@ -30,7 +30,7 @@ public class ShooterController : MonoBehaviour
 
     private float framesSinceLastShoot;
 
-    public float phaseTime;
+    private float phaseTime = 0.01f;
 
     private float timestampOfNextShot = 0;
     private bool doNextShot = false;
@@ -51,18 +51,18 @@ public class ShooterController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        print(Time.frameCount / Time.time);
+        //(Time.frameCount / Time.time);
     }
 
     void FixedUpdate()
     {
-        if (activelyShooting) {
+        /*if (activelyShooting) {
             framesSinceLastShoot++;
             if (framesSinceLastShoot >= 40) {
                 shootNoInput();
                 framesSinceLastShoot = 0;
             }
-        }
+        }*/
 
         if (Time.time >= timestampOfNextShot && doNextShot)
         {
@@ -83,13 +83,14 @@ public class ShooterController : MonoBehaviour
     }
     public void shootNoInput()
     {
+        print("SHOOT");
         timestampOfNextShot = Time.time + phaseTime;
         doNextShot = true;
     }
     public void shootNoDelay()
     {
 
-        print("Required velocity: " + shootOnTheMove.vRequired);
+        //print("Required velocity: " + shootOnTheMove.vRequired);
         if (shootOnTheMove.getDistanceToTarget() > 7.5) return;
 
         counter.countShotTaken();

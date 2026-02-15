@@ -65,8 +65,8 @@ public class HoodController : MonoBehaviour
     public void setRotation(float targetRotation, float turretRotation)
     {
 
-        turretDelta = turretRotation - transform.rotation.eulerAngles.y;
-        hoodDelta = targetRotation - transform.rotation.eulerAngles.z;
+        turretDelta = (-turretRotation - transform.rotation.eulerAngles.y + 540) % 360 - 180;
+        hoodDelta = (-targetRotation - transform.rotation.eulerAngles.z + 540) % 360 - 180;
 
         float newTurretPosition = transform.rotation.eulerAngles.y + 0.02f * turretPID.Update(-turretRotation, transform.rotation.eulerAngles.y, 0.02f);
 

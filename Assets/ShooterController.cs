@@ -51,11 +51,7 @@ public class ShooterController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Time.time >= timestampOfNextShot && doNextShot)
-        {
-            doNextShot = false;
-            shootNoDelay();
-        }
+        print(Time.frameCount / Time.time);
     }
 
     void FixedUpdate()
@@ -66,6 +62,12 @@ public class ShooterController : MonoBehaviour
                 shootNoInput();
                 framesSinceLastShoot = 0;
             }
+        }
+
+        if (Time.time >= timestampOfNextShot && doNextShot)
+        {
+            doNextShot = false;
+            shootNoDelay();
         }
     }
 

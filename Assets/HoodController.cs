@@ -17,13 +17,41 @@ public class HoodController : MonoBehaviour
     private float hood = 45;
     private float turret = 45;
 
-    private float weightedTurretAngle = 0;
-    private float weightedHoodAngle = 0;
+    public PID turretPID;
+
+    public PID hoodPID;
 
     public bool lockTo180;
 
     public bool useOffsetSlider;
     public Slider offsetSlider;
+
+    [System.Serializable]
+    public class PID {
+        public float pFactor, iFactor, dFactor;
+
+        float integral;
+        float lastError;
+
+
+        public PID(float pFactor, float iFactor, float dFactor) {
+            this.pFactor = pFactor;
+            this.iFactor = iFactor;
+            this.dFactor = dFactor;
+        }
+
+
+        public float Update(float setpoint, float actual, float timeFrame) {
+            float error = (setpoint - actual + 540) % 360 - 180;
+            integral += error * timeFrame;
+            float deriv = (error - lastError) / timeFrame;
+            lastError = error;
+            return error * pFactor + integral * iFactor + deriv * dFactor;
+        }
+    }
+
+    public float turretDelta;
+    public float hoodDelta;
 
     
 
@@ -36,12 +64,18 @@ public class HoodController : MonoBehaviour
 
     public void setRotation(float targetRotation, float turretRotation)
     {
-        weightedTurretAngle = currentFrameWeightTurret * weightedTurretAngle + turretRotation * (1-currentFrameWeightTurret);
+
+        turretDelta = turretRotation - transform.rotation.eulerAngles.y;
+        hoodDelta = targetRotation - transform.rotation.eulerAngles.z;
+
+        float newTurretPosition = transform.rotation.eulerAngles.y + 0.02f * turretPID.Update(-turretRotation, transform.rotation.eulerAngles.y, 0.02f);
+
+        float newHoodPosition = transform.rotation.eulerAngles.z + 0.02f * hoodPID.Update(-targetRotation, transform.rotation.eulerAngles.z, 0.02f);
 
         Quaternion newRot = Quaternion.Euler(new Vector3(
             transform.rotation.eulerAngles.x,
-            lockTo180 ? 180 : weightedTurretAngle,
-            targetRotation
+            lockTo180 ? 180 : newTurretPosition,
+            newHoodPosition
         ));
 
         transform.rotation = newRot;//Quaternion.SlerpUnclamped(transform.rotation, newRot, 1);
@@ -63,15 +97,15 @@ public class HoodController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        
         if (useSlider)
         {
             setRotation(90-angleSlider.value, turret);
         } else
         {
-            weightedHoodAngle = currentFrameWeightHood * weightedHoodAngle + hood * (1-currentFrameWeightHood);
-            setRotation((float)(90 -weightedHoodAngle - (useOffsetSlider ? offsetSlider.value * lerp.getOffsetMultiplier() : 0)), turret);
+            setRotation((float)(90 -hood - (useOffsetSlider ? offsetSlider.value * lerp.getOffsetMultiplier() : 0)), turret);
         }
     }
 }

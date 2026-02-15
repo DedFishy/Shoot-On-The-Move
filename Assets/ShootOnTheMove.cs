@@ -4,6 +4,7 @@ using System.Numerics;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
@@ -31,6 +32,9 @@ public class ShootOnTheMove : MonoBehaviour
     public float distanceCompensationFactor;
 
     public float k;
+
+    public float turretVelocityLookaheadConstant;
+    public float hoodVelocityLookaheadConstant;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -269,9 +273,12 @@ public class ShootOnTheMove : MonoBehaviour
     void ElijahSpecial()
     {
         var targetPosition = getTargetPosition();
-        var turretPosition = convertToVector2(turretController.getTranslation());
         Vector2 robotPose = getTranslation();
-        
+        var turretPosition = robotPose;
+
+        Vector2 lookaheadDelta = getLinearVelocity() * 80f/1000f;
+        robotPose += lookaheadDelta;
+        turretPosition += lookaheadDelta;
 
         /*for (int i = 1; i < velocityMeasurementFrames.Length; i++)
         {
@@ -366,6 +373,8 @@ public class ShootOnTheMove : MonoBehaviour
                     * (robotToTurret.x * Mathf.Cos(robotRotation)
                         - robotToTurret.y * Mathf.Sin(robotRotation));
 
+        print(robotToTurret);
+
         float timeOfFlight = (float)lerpTable.getTimeOfFlight();
         
         Vector2 turretToTargetVector = (getTargetPosition() - turretPosition);
@@ -457,7 +466,7 @@ public class ShootOnTheMove : MonoBehaviour
             );
 
             // 5) Turret angle command
-            turretAngleDeg = Mathf.Atan2(V_turret.y, -V_turret.x) * Mathf.Rad2Deg;
+            turretAngleDeg = Mathf.Atan2(V_turret.y, V_turret.x) * Mathf.Rad2Deg;
  
 
 

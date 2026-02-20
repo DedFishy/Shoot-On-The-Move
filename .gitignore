@@ -38,3 +38,5 @@
 /UnityEngine.UI.csproj
 /UserSettings
 /Assets/Field Hub OBJ/Field Hub OBJ.obj
+*.blob
+/Temp/*
